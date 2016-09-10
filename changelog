@@ -1,0 +1,6 @@
+Added /accent system
+Added local chat
+Added global chat (/ooc)
+Added /makeadmin command
+Added /togooc command
+Optimised login/register and spawning
