@@ -409,7 +409,6 @@ public OnPlayerConnect(playerid)
 	gIsPlayerLoggedIn[playerid] = 0;
 	gIsPlayerRegistered[playerid] = 0;
 	authenicated[playerid] = 0 ;
-	SetSpawnInfo( playerid, 0, 1, 1958.33, 1343.12, 15.36, 269.15, 0, 0, 0, 0, 0, 0 );
 	authenicateAccount(playerid);
 
 	classSelectionTextdraw1[playerid] = TextDrawCreate(144.000000, 140.000000, "Grove Street Families");
@@ -900,5 +899,4 @@ CMD:makeadmin(playerid, params[])
 	}
 	return 1;
 }
-
 
