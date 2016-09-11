@@ -4,7 +4,7 @@
 	You do not have permission to publish this material as your own
 	You do not have permission to remove this copyright notice
 	You do have permission to publish this script as an edit with original credit
-	
+
 	This is the y_ini file version for public use
 	A mysql version will be released shortly after for private use
 
@@ -80,7 +80,7 @@ new gIsPlayerRegistered[MAX_PLAYERS];
 new authenicated[MAX_PLAYERS];
 
 new globalOOC = 0;
-	
+
 enum account_Data {
 	pPassword,
 	pTeam,
@@ -689,7 +689,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
                 if(!strlen(inputtext)) return ShowPlayerDialog(playerid, DIALOG_REGISTER, DIALOG_STYLE_INPUT, "{FFFFFF}Register a New Account", "{FFFFFF}You've chosen your team,\n\nNow please enter a password to protect your account.", "Submit", "Leave");
                 new INI:File = INI_Open(UserPath(playerid));
                 INI_SetTag(File, "data");
-                
+
                 INI_WriteInt(File, "Password", udb_hash(inputtext));
                 accountData[playerid][pPassword] = udb_hash(inputtext);
                 INI_WriteInt(File, "Money", 0);
@@ -708,7 +708,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
                 gIsPlayerRegistered[playerid] = 1;
                 gIsPlayerLoggedIn[playerid] = 1;
                 accountData[playerid][pHealth] = 100;
-				
+
 				new name[MAX_PLAYER_NAME];
 				GetPlayerName(playerid, name, sizeof(name));
 				format(string, sizeof(string), "Thanks for registering an acccount, %s! Have fun and stay alive.", name);
@@ -730,10 +730,10 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
      				GetPlayerName(playerid, name, sizeof(name));
      				format(string, sizeof(string), "Thanks for coming back,{FFFFFF} %s!", name);
      				SendClientMessage(playerid, COLOR_VAGOS, string);
-     				
+
 					gIsPlayerLoggedIn[playerid] = 1;
 					gIsPlayerRegistered[playerid] = 1;
-					
+
      				SpawnPlayer(playerid);
      				return 1;
                 }
@@ -745,7 +745,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
                 return 1;
             }
         } // end of
-        
+
         case DIALOG_ACCENT:
         {
             if(response)
@@ -770,6 +770,67 @@ public OnPlayerClickPlayer(playerid, clickedplayerid, source)
 
 
 // Stocks
+stock ResetPlayerTeam(playerid, team)
+{
+	switch(team)
+	{
+	    case 1: { SetPlayerSkin(playerid, 105); }
+	    case 2: { SetPlayerSkin(playerid, 102); }
+	    case 3: { SetPlayerSkin(playerid, 114); }
+	    case 4: { SetPlayerSkin(playerid, 108); }
+	    case 5: { SetPlayerSkin(playerid, 121); }
+	    case 6: { SetPlayerSkin(playerid, 173); }
+	    case 7: { SetPlayerSkin(playerid, 254); }
+	    case 8: { SetPlayerSkin(playerid, 111); }
+	    case 9: { SetPlayerSkin(playerid, 281); }
+	}
+	return 1;
+}
+
+stock SendTeamMessage(playerid, teamid, string[])
+{
+	new msg[256];
+	foreach( new i : Player)
+	{
+	    if(accountData[i][pTeam] == teamid)
+	    {
+	        format(msg, sizeof(msg), "%s says:{FFFFFF} %s", returnPlayerName(playerid), string);
+	    }
+	    switch(teamid)
+		{
+			case 1: { SendClientMessage(i, COLOR_GROVE, msg); }
+			case 2: { SendClientMessage(i, COLOR_BALLAS, msg); }
+			case 3: { SendClientMessage(i, COLOR_AZTECAS, msg); }
+			case 4: { SendClientMessage(i, COLOR_VAGOS, msg); }
+			case 5: { SendClientMessage(i, COLOR_NANG, msg); }
+			case 6: { SendClientMessage(i, COLOR_RIFA, msg); }
+			case 7: { SendClientMessage(i, COLOR_BIKERS, msg); }
+			case 8: { SendClientMessage(i, COLOR_RMAFIA, msg); }
+			case 9: { SendClientMessage(i, COLOR_POLICE, msg); }
+		}
+	}
+	
+	return 1;
+}
+
+stock GetTeamName(teamid)
+{
+	new name[64];
+	switch(teamid)
+	{
+	    case 1: { name = "Grove St. Families"; }
+	    case 2: { name = "Glen Park Ballas"; }
+	    case 3: { name = "Los Aztecas"; }
+	    case 4: { name = "Los Santos Vagos"; }
+	    case 5: { name = "Da Nang Boys"; }
+	    case 6: { name = "Los Santos Rifas"; }
+	    case 7: { name = "Hells Angels"; }
+	    case 8: { name = "Russian Mafia"; }
+	    case 9: { name = "Los Santos Police Department"; }
+	}
+	return name;
+}
+
 stock UserPath(playerid)
 {
 	new string[128],playername[MAX_PLAYER_NAME];
@@ -853,7 +914,33 @@ CMD:ooc(playerid, params[])
 	return 1;
 }
 
+CMD:t(playerid, params[])
+{
+	if(gIsPlayerLoggedIn[playerid] == 0) return 1;
+	new string[256];
+	if(!strlen(params)) return SendSyntaxMessage(playerid, "/t [chat]");
+	format(string, sizeof(string), "%s", params);
+	SendTeamMessage(playerid, accountData[playerid][pTeam], string);
+	return 1;
+}
 // Admin commands
+CMD:setteam(playerid, params[])
+{
+	if(accountData[playerid][pAdminLevel] < 2) return SendUnauthorisedMessage(playerid);
+	new userid, team, string[126];
+	if(sscanf(params, "ud", userid, team)) return SendSyntaxMessage(playerid, "/setteam [playerid id/part of name] [team id]");
+	if(!IsPlayerConnected(userid)) return SendPlayerNotConnectedMessage(playerid);
+	if(team == 0) return 1;
+	if(team > 9) return 1;
+	accountData[userid][pTeam] = team;
+	format(string, sizeof(string), "Admin %s has just set your team to %s.", returnPlayerName(playerid), GetTeamName(team));
+	SendNoticeMessage(userid, string);
+	format(string, sizeof(string), "You set %s's team to %s.", returnPlayerName(userid), GetTeamName(team));
+	SendNoticeMessage(playerid, string);
+	ResetPlayerTeam(userid, team);
+	return 1;
+}
+
 CMD:togooc(playerid, params[])
 {
 	if(accountData[playerid][pAdminLevel] < 1) return SendUnauthorisedMessage(playerid);
@@ -880,7 +967,7 @@ CMD:makeadmin(playerid, params[])
 	if(sscanf(params, "ud", userid, level)) return SendSyntaxMessage(playerid, "/makeadmin [player ID/name] [level]");
 	if(!IsPlayerConnected(userid)) return SendPlayerNotConnectedMessage(playerid);
 	if(accountData[userid][pAdminLevel] >= accountData[playerid][pAdminLevel]) return SendErrorMessage(playerid, "You can not adjust their admin level.");
-	
+
 	if(accountData[userid][pAdminLevel] == 0)
 	{
 		format(string, sizeof(string), "%s has made %s a level %d admin.", returnPlayerName(playerid), returnPlayerName(userid), level);
