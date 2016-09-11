@@ -1,3 +1,8 @@
+Added /setteam for level 2 admin
+Added /t chat for teams
+Added getteamname function
+Added sendteammessage function
+
 Added /accent system
 Added local chat
 Added global chat (/ooc)
